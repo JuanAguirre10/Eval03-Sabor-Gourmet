@@ -1,7 +1,7 @@
 package com.tecsup.saborgourmet.service;
 
 import com.tecsup.saborgourmet.model.*;
-import com.tecsup.saborgourmet.repository.PedidoRepository;
+import com.tecsup.saborgourmet.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -36,9 +36,12 @@ public class Pedido {
     private LocalDateTime fechaHora;
 
     @NotBlank(message = "El estado es obligatorio")
-    @Pattern(regexp = "pendiente|en_preparacion|servido|cerrado",
-            message = "Estado inválido")
+    @Pattern(
+            regexp = "pendiente|en_preparacion|servido|cerrado",
+            message = "Estado inválido"
+    )
     @Column(nullable = false, length = 20)
+    @Builder.Default
     private String estado = "pendiente";
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -46,6 +49,7 @@ public class Pedido {
     private List<DetallePedido> detalles = new ArrayList<>();
 
     @Column(nullable = false)
+    @Builder.Default
     private Double total = 0.0;
 
     @PrePersist
@@ -53,12 +57,18 @@ public class Pedido {
         fechaHora = LocalDateTime.now();
     }
 
+    /**
+     * Calcula el total del pedido sumando los subtotales de cada detalle.
+     */
     public void calcularTotal() {
         this.total = detalles.stream()
                 .mapToDouble(DetallePedido::getSubtotal)
                 .sum();
     }
 
+    /**
+     * Agrega un detalle al pedido y recalcula el total.
+     */
     public void agregarDetalle(DetallePedido detalle) {
         detalles.add(detalle);
         detalle.setPedido(this);

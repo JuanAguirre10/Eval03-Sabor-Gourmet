@@ -1,6 +1,6 @@
 package com.tecsup.saborgourmet.controller;
 
-import com.tecsup.saborgourmet.model.Pedido;
+import com.tecsup.saborgourmet.model.*;
 import com.tecsup.saborgourmet.service.ClienteService;
 import com.tecsup.saborgourmet.service.MesaService;
 import com.tecsup.saborgourmet.service.PedidoService;
@@ -41,17 +41,23 @@ public class PedidoController {
     }
 
     @PostMapping
-    public String guardarPedido(@Valid @ModelAttribute Pedido pedido,
-                                BindingResult result,
+    public String guardarPedido(@RequestParam Long mesaId,
+                                @RequestParam(required = false) Long clienteId,
+                                @RequestParam String estado,
                                 RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            return "pedidos/formulario";
-        }
-
         try {
+            Mesa mesa = mesaService.findById(mesaId);
+            Cliente cliente = clienteId != null ? clienteService.findById(clienteId) : null;
+
+            Pedido pedido = Pedido.builder()
+                    .mesa(mesa)
+                    .cliente(cliente)
+                    .estado(estado)
+                    .build();
+
             pedidoService.createPedido(pedido);
             redirectAttributes.addFlashAttribute("success",
-                    "Pedido creado exitosamente");
+                    "Pedido creado exitosamente. Mesa ocupada.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/pedidos/nuevo";
@@ -111,5 +117,40 @@ public class PedidoController {
         }
 
         return "redirect:/pedidos";
+    }
+    @GetMapping("/agregar-items/{id}")
+    public String mostrarAgregarItems(@PathVariable Long id, Model model) {
+        try {
+            Pedido pedido = pedidoService.findById(id);
+            model.addAttribute("pedido", pedido);
+            model.addAttribute("platos", platoService.findAllActivos());
+            model.addAttribute("detalle", new DetallePedido());
+            return "pedidos/agregar-items";
+        } catch (Exception e) {
+            return "redirect:/pedidos";
+        }
+    }
+
+    @PostMapping("/agregar-items/{id}")
+    public String agregarItem(@PathVariable Long id,
+                              @RequestParam Long platoId,
+                              @RequestParam Integer cantidad,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            Plato plato = platoService.findById(platoId);
+
+            DetallePedido detalle = DetallePedido.builder()
+                    .plato(plato)
+                    .cantidad(cantidad)
+                    .build();
+
+            pedidoService.agregarDetalle(id, detalle);
+            redirectAttributes.addFlashAttribute("success",
+                    "Item agregado exitosamente");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/pedidos/agregar-items/" + id;
     }
 }

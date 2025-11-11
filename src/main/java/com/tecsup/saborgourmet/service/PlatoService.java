@@ -1,7 +1,7 @@
 package com.tecsup.saborgourmet.service;
 
-import com.tecsup.saborgourmet.model.Plato;
-import com.tecsup.saborgourmet.repository.PlatoRepository;
+import com.tecsup.saborgourmet.model.*;
+import com.tecsup.saborgourmet.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

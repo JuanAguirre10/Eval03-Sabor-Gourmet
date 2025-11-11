@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nueva Compra - Sabor Gourmet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/saborgourmet/dashboard">🍽️ Sabor Gourmet</a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h2 class="mb-4">Nueva Compra</h2>
+
+    <div class="card">
+        <div class="card-body">
+            <form th:action="@{/compras}" th:object="${compra}" method="post">
+
+                <div class="mb-3">
+                    <label class="form-label">Proveedor *</label>
+                    <select th:field="*{proveedor.idProveedor}" class="form-select" required>
+                        <option value="">Seleccione un proveedor</option>
+                        <option th:each="proveedor : ${proveedores}"
+                                th:value="${proveedor.idProveedor}"
+                                th:text="${proveedor.nombre} + ' - RUC: ' + ${proveedor.ruc}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Nota:</strong> Los detalles de la compra (insumos) se agregarán después de crear la compra.
+                    El stock se actualizará automáticamente al registrar la compra.
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">💾 Crear Compra</button>
+                    <a href="/saborgourmet/compras" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

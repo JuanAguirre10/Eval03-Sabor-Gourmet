@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mesas - Sabor Gourmet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/saborgourmet/dashboard">🍽️ Sabor Gourmet</a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>🪑 Gestión de Mesas</h2>
+        <div>
+            <span class="badge bg-success me-2" th:text="'Disponibles: ' + ${disponibles}"></span>
+            <a href="/saborgourmet/mesas/nuevo" class="btn btn-success">➕ Nueva Mesa</a>
+        </div>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3 mb-3" th:each="mesa : ${mesas}">
+            <div class="card"
+                 th:classappend="${mesa.estado == 'disponible' ? 'border-success' :
+                                 mesa.estado == 'ocupada' ? 'border-danger' :
+                                 mesa.estado == 'reservada' ? 'border-warning' : 'border-secondary'}">
+                <div class="card-body text-center">
+                    <h3 class="card-title" th:text="'Mesa ' + ${mesa.numero}"></h3>
+                    <p class="mb-1">
+                        <span th:if="${mesa.estado == 'disponible'}" class="badge bg-success">Disponible</span>
+                        <span th:if="${mesa.estado == 'ocupada'}" class="badge bg-danger">Ocupada</span>
+                        <span th:if="${mesa.estado == 'reservada'}" class="badge bg-warning">Reservada</span>
+                        <span th:if="${mesa.estado == 'mantenimiento'}" class="badge bg-secondary">Mantenimiento</span>
+                    </p>
+                    <p class="text-muted">Capacidad: <span th:text="${mesa.capacidad} + ' personas'"></span></p>
+
+                    <div class="btn-group-vertical w-100 mt-2" role="group">
+                        <a th:href="@{/mesas/editar/{id}(id=${mesa.idMesa})}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                        <a th:if="${mesa.estado == 'disponible'}"
+                           th:href="@{/mesas/ocupar/{id}(id=${mesa.idMesa})}"
+                           class="btn btn-sm btn-danger">🔒 Ocupar</a>
+                        <a th:if="${mesa.estado == 'ocupada'}"
+                           th:href="@{/mesas/liberar/{id}(id=${mesa.idMesa})}"
+                           class="btn btn-sm btn-success">✅ Liberar</a>
+                        <a th:href="@{/mesas/eliminar/{id}(id=${mesa.idMesa})}"
+                           class="btn btn-sm btn-secondary"
+                           onclick="return confirm('¿Está seguro de eliminar esta mesa?')">🗑️ Eliminar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a href="/saborgourmet/dashboard" class="btn btn-secondary mt-3">← Volver al Dashboard</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

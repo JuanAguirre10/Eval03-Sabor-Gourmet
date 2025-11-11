@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario - Sabor Gourmet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/saborgourmet/dashboard">🍽️ Sabor Gourmet</a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>📦 Gestión de Inventario</h2>
+        <div>
+            <a href="/saborgourmet/inventario/insumos/alertas" class="btn btn-warning me-2">
+                ⚠️ Alertas (<span th:text="${alertas.size()}"></span>)
+            </a>
+            <a href="/saborgourmet/inventario/insumos/nuevo" class="btn btn-success">➕ Nuevo Insumo</a>
+        </div>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Unidad</th>
+                    <th>Stock</th>
+                    <th>Stock Mínimo</th>
+                    <th>Precio Compra</th>
+                    <th>Estado Stock</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="insumo : ${insumos}"
+                    th:classappend="${insumo.necesitaReabastecimiento() ? 'table-warning' : ''}">
+                    <td th:text="${insumo.idInsumo}"></td>
+                    <td th:text="${insumo.nombre}"></td>
+                    <td th:text="${insumo.unidadMedida}"></td>
+                    <td th:text="${insumo.stock}"></td>
+                    <td th:text="${insumo.stockMinimo}"></td>
+                    <td th:text="'S/ ' + ${#numbers.formatDecimal(insumo.precioCompra, 1, 2)}"></td>
+                    <td>
+                        <span th:if="${insumo.stock == 0}" class="badge bg-danger">Sin Stock</span>
+                        <span th:if="${insumo.necesitaReabastecimiento() && insumo.stock > 0}" class="badge bg-warning">Stock Bajo</span>
+                        <span th:if="${!insumo.necesitaReabastecimiento()}" class="badge bg-success">Normal</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/inventario/insumos/editar/{id}(id=${insumo.idInsumo})}" class="btn btn-sm btn-warning">✏️</a>
+                        <a th:href="@{/inventario/insumos/eliminar/{id}(id=${insumo.idInsumo})}"
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('¿Eliminar este insumo?')">🗑️</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(insumos)}">
+                    <td colspan="8" class="text-center text-muted">No hay insumos registrados</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <a href="/saborgourmet/dashboard" class="btn btn-secondary mt-3">← Volver al Dashboard</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
