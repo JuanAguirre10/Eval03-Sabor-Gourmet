@@ -17,12 +17,13 @@
 
     <div class="card">
         <div class="card-body">
-            <form th:action="@{/pedidos}" th:object="${pedido}" method="post">
+            <form th:action="@{/pedidos}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Mesa *</label>
-                        <select th:field="*{mesa.idMesa}" class="form-select" required>
+                        <select name="mesaId" class="form-select" required>
                             <option value="">Seleccione una mesa</option>
                             <option th:each="mesa : ${mesas}"
                                     th:value="${mesa.idMesa}"
@@ -32,7 +33,7 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Cliente (Opcional)</label>
-                        <select th:field="*{cliente.idCliente}" class="form-select">
+                        <select name="clienteId" class="form-select">
                             <option value="">Sin cliente asignado</option>
                             <option th:each="cliente : ${clientes}"
                                     th:value="${cliente.idCliente}"
@@ -44,7 +45,7 @@
 
                 <div class="mb-3">
                     <label class="form-label">Estado</label>
-                    <select th:field="*{estado}" class="form-select">
+                    <select name="estado" class="form-select">
                         <option value="pendiente">Pendiente</option>
                         <option value="en_preparacion">En Preparación</option>
                         <option value="servido">Servido</option>

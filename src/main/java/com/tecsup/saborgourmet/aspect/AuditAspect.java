@@ -14,11 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-/**
- * Aspecto de Auditoría que registra todas las operaciones CRUD
- * en la bitácora del sistema
- * @author Juan Aguirre Saavedra
- */
 @Aspect
 @Component
 @Slf4j
@@ -27,57 +22,35 @@ public class AuditAspect {
 
     private final BitacoraRepository bitacoraRepository;
 
-    /**
-     * Pointcut para operaciones de creación
-     */
     @Pointcut("execution(* com.tecsup.saborgourmet.service.*.create*(..)) || " +
             "execution(* com.tecsup.saborgourmet.service.*.save*(..))")
     public void createOperations() {}
 
-    /**
-     * Pointcut para operaciones de actualización
-     */
     @Pointcut("execution(* com.tecsup.saborgourmet.service.*.update*(..)) || " +
             "execution(* com.tecsup.saborgourmet.service.*.edit*(..))")
     public void updateOperations() {}
 
-    /**
-     * Pointcut para operaciones de eliminación
-     */
     @Pointcut("execution(* com.tecsup.saborgourmet.service.*.delete*(..)) || " +
             "execution(* com.tecsup.saborgourmet.service.*.remove*(..))")
     public void deleteOperations() {}
 
-    /**
-     * Audita operaciones de creación
-     */
     @AfterReturning(pointcut = "createOperations()", returning = "result")
     public void auditCreate(JoinPoint joinPoint, Object result) {
         registrarAuditoria(joinPoint, "CREATE", result);
     }
 
-    /**
-     * Audita operaciones de actualización
-     */
     @AfterReturning(pointcut = "updateOperations()", returning = "result")
     public void auditUpdate(JoinPoint joinPoint, Object result) {
         registrarAuditoria(joinPoint, "UPDATE", result);
     }
 
-    /**
-     * Audita operaciones de eliminación
-     */
     @AfterReturning(pointcut = "deleteOperations()", returning = "result")
     public void auditDelete(JoinPoint joinPoint, Object result) {
         registrarAuditoria(joinPoint, "DELETE", result);
     }
 
-    /**
-     * Registra en la bitácora la acción realizada
-     */
     private void registrarAuditoria(JoinPoint joinPoint, String accion, Object result) {
         try {
-            // Obtener usuario autenticado
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             Usuario usuario = null;
 
@@ -85,38 +58,22 @@ public class AuditAspect {
                 usuario = (Usuario) auth.getPrincipal();
             }
 
-            // Obtener módulo desde el nombre de la clase del servicio
             String className = joinPoint.getTarget().getClass().getSimpleName();
             String modulo = className.replace("Service", "").toUpperCase();
-
-            // Obtener método y parámetros
             String metodo = joinPoint.getSignature().getName();
-            Object[] args = joinPoint.getArgs();
 
-            // Construir detalle
-            StringBuilder detalle = new StringBuilder();
-            detalle.append("Método: ").append(metodo).append(" | ");
+            String detalle = metodo + " - Operación exitosa";
 
-            if (args != null && args.length > 0) {
-                detalle.append("Parámetros: ");
-                for (int i = 0; i < args.length; i++) {
-                    if (args[i] != null) {
-                        detalle.append(args[i].getClass().getSimpleName())
-                                .append("=").append(args[i].toString());
-                        if (i < args.length - 1) detalle.append(", ");
-                    }
-                }
+            String ipAddress = obtenerIpCliente();
+            if ("0:0:0:0:0:0:0:1".equals(ipAddress) || "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:1".equals(ipAddress)) {
+                ipAddress = "127.0.0.1";
             }
 
-            // Obtener IP del cliente
-            String ipAddress = obtenerIpCliente();
-
-            // Crear y guardar registro de bitácora
             Bitacora bitacora = Bitacora.builder()
                     .usuario(usuario)
                     .modulo(modulo)
                     .accion(accion)
-                    .detalle(detalle.toString())
+                    .detalle(detalle)
                     .ipAddress(ipAddress)
                     .build();
 
@@ -131,9 +88,6 @@ public class AuditAspect {
         }
     }
 
-    /**
-     * Obtiene la IP del cliente desde el request HTTP
-     */
     private String obtenerIpCliente() {
         try {
             ServletRequestAttributes attributes =
@@ -155,9 +109,6 @@ public class AuditAspect {
         return "unknown";
     }
 
-    /**
-     * Manejo de excepciones en operaciones auditadas
-     */
     @AfterThrowing(pointcut = "createOperations() || updateOperations() || deleteOperations()",
             throwing = "exception")
     public void auditException(JoinPoint joinPoint, Exception exception) {
@@ -170,12 +121,17 @@ public class AuditAspect {
             String modulo = className.replace("Service", "").toUpperCase();
             String metodo = joinPoint.getSignature().getName();
 
+            String ipAddress = obtenerIpCliente();
+            if ("0:0:0:0:0:0:0:1".equals(ipAddress) || "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:1".equals(ipAddress)) {
+                ipAddress = "127.0.0.1";
+            }
+
             Bitacora bitacora = Bitacora.builder()
                     .usuario(usuario)
                     .modulo(modulo)
                     .accion("ERROR")
-                    .detalle("Método: " + metodo + " | Error: " + exception.getMessage())
-                    .ipAddress(obtenerIpCliente())
+                    .detalle(metodo + " - Error: " + exception.getMessage())
+                    .ipAddress(ipAddress)
                     .build();
 
             bitacoraRepository.save(bitacora);

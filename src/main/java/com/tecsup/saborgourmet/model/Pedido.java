@@ -70,8 +70,9 @@ public class Pedido {
      * Agrega un detalle al pedido y recalcula el total.
      */
     public void agregarDetalle(DetallePedido detalle) {
-        detalles.add(detalle);
         detalle.setPedido(this);
+        detalle.calcularSubtotal();
+        detalles.add(detalle);
         calcularTotal();
     }
 }
